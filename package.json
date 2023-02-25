@@ -1,11 +1,29 @@
 {
   "name": "bloglist",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A blog list application",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cabbachew/bloglist.git"
+  },
   "author": "Daniel Oh",
-  "license": "ISC"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cabbachew/bloglist/issues"
+  },
+  "homepage": "https://github.com/cabbachew/bloglist#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^6.10.0"
+  }
 }
