@@ -33,6 +33,7 @@ const mostBlogs = (blogs) => {
   const author = _.maxBy(_.keys(authors), (o) => authors[o])
   const count = authors[author]
 
+  // Empty input should return an empty object
   return {
     author,
     blogs: count
