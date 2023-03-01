@@ -1,7 +1,7 @@
 const _ = require('lodash')
 
 // Receives an array of blog posts and always returns 1
-const dummy = (blogs) => {
+const dummy = () => {
   return 1
 }
 
@@ -29,14 +29,41 @@ const favoriteBlog = (blogs) => {
 }
 
 const mostBlogs = (blogs) => {
-  const authors = _.countBy(blogs, 'author') // Creates an object where the keys are the authors and the values are the number of blogs
+  // Empty input should return an empty object
+  if (blogs.length === 0) {
+    return {}
+  }
+
+  // _.countBy returns an object where the keys are the authors and the values are the number of times the key was found
+  const authors = _.countBy(blogs, 'author')
+  // _.keys returns an array of the keys in the object
+  // _.maxBy returns the key with the highest value
   const author = _.maxBy(_.keys(authors), (o) => authors[o])
   const count = authors[author]
 
-  // Empty input should return an empty object
   return {
     author,
     blogs: count
+  }
+}
+
+const mostLikes = (blogs) => {
+  // Empty input should return an empty object
+  if (blogs.length === 0) {
+    return {}
+  }
+
+  // _.groupBy returns an object where the keys are authors and the values are arrays of elements with that key
+  const authors = _.groupBy(blogs, 'author')
+  // _.keys returns an array of the keys in the object
+  // _.maxBy returns the key with the highest value
+  // totalLikes (defined above) receives an array of blog posts and returns the total likes
+  const author = _.maxBy(_.keys(authors), (o) => totalLikes(authors[o]))
+  const count = totalLikes(authors[author])
+
+  return {
+    author,
+    likes: count
   }
 }
 
@@ -44,5 +71,6 @@ module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
-  mostBlogs
+  mostBlogs,
+  mostLikes
 }
