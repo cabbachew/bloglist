@@ -35,6 +35,11 @@ test('all blogs are returned', async () => {
   expect(response.body).toHaveLength(helper.initialBlogs.length)
 })
 
+test('the unique identifier property of the blog posts is named id', async () => {
+  const response = await api.get('/api/blogs')
+  expect(response.body[0].id).toBeDefined()
+})
+
 // test('a specific blog is within the returned blogs', async () => {
 //   const response = await api.get('/api/blogs')
 
