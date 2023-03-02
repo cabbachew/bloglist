@@ -72,6 +72,25 @@ test('a valid blog can be added ', async () => {
   )
 })
 
+test('blog without likes property defaults to 0', async () => {
+  const newBlog = {
+    title: 'async/await simplifies making async calls',
+    author: 'Michael Chan',
+    url: 'https://reactpatterns.com/',
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  const addedBlog = blogsAtEnd.find(blog => blog.title === 'async/await simplifies making async calls')
+  expect(addedBlog.likes).toBe(0)
+})
+  
+
 // If validations are added to the model, this test will fail
 // test('blog without title is not added', async () => {
 // const newBlog = {
