@@ -90,24 +90,39 @@ test('blog without likes property defaults to 0', async () => {
   expect(addedBlog.likes).toBe(0)
 })
   
+test('blog without title is not added', async () => {
+  const newBlog = {
+    author: 'Michael Chan',
+    url: 'https://reactpatterns.com/',
+    likes: 7,
+  }
 
-// If validations are added to the model, this test will fail
-// test('blog without title is not added', async () => {
-// const newBlog = {
-//   author: 'Michael Chan',
-//   url: 'https://reactpatterns.com/',
-//   likes: 7,
-// }
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
 
-// await api
-//   .post('/api/blogs')
-//   .send(newBlog)
-//   .expect(400)
+  const blogsAtEnd = await helper.blogsInDb()
 
-// const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+})
 
-// expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
-// })
+test('blog without url is not added', async () => {
+  const newBlog = {
+    title: 'async/await simplifies making async calls',
+    author: 'Michael Chan',
+    likes: 7,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+  
+  const blogsAtEnd = await helper.blogsInDb()
+
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+})
 
 // test('a specific blog can be viewed', async () => {
 //   const blogsAtStart = await helper.blogsInDb()
