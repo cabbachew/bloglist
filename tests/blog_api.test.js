@@ -49,28 +49,28 @@ test('the unique identifier property of the blog posts is named id', async () =>
 //    )
 // })
 
-// test('a valid blog can be added ', async () => {
-//   const newBlog = {
-//     title: 'async/await simplifies making async calls',
-//     author: 'Michael Chan',
-//     url: 'https://reactpatterns.com/',
-//     likes: 7,
-//   }
+test('a valid blog can be added ', async () => {
+  const newBlog = {
+    title: 'async/await simplifies making async calls',
+    author: 'Michael Chan',
+    url: 'https://reactpatterns.com/',
+    likes: 7,
+  }
 
-//   await api
-//     .post('/api/blogs')
-//     .send(newBlog)
-//     .expect(201)
-//     .expect('Content-Type', /application\/json/)
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
 
-//   const blogsAtEnd = await helper.blogsInDb()
-//   expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
 
-//   const titles = blogsAtEnd.map(blog => blog.title)
-//   expect(titles).toContain(
-//     'async/await simplifies making async calls'
-//   )
-// })
+  const titles = blogsAtEnd.map(blog => blog.title)
+  expect(titles).toContain(
+    'async/await simplifies making async calls'
+  )
+})
 
 // If validations are added to the model, this test will fail
 // test('blog without title is not added', async () => {
