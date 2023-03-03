@@ -30,6 +30,12 @@ blogsRouter.post('/', async (request, response) => {
   //   .catch(error => next(error))
 })
 
+// Delete a blog
+blogsRouter.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndRemove(request.params.id)
+  response.status(204).end()
+})
+
 module.exports = blogsRouter
 
 // Show a single blog
@@ -40,12 +46,6 @@ module.exports = blogsRouter
 //   } else {
 //     response.status(404).end()
 //   } 
-// })
-
-// Delete a blog
-// blogsRouter.delete('/:id', async (request, response, next) => {
-//   await Blog.findByIdAndRemove(request.params.id)
-//   response.status(204).end()
 // })
 
 // Update a blog

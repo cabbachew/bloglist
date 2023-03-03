@@ -168,26 +168,26 @@ describe('addition of a new blog', () => {
 //   })
 // })
 
-// describe('deletion of a blog', () => {
-//   test('a blog can be deleted', async () => {
-//     const blogsAtStart = await helper.blogsInDb()
-//     const blogToDelete = blogsAtStart[0]
+describe('deletion of a blog', () => {
+  test('a blog can be deleted', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
 
-//     await api
-//       .delete(`/api/blogs/${blogToDelete.id}`)
-//       .expect(204)
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
 
-//     const blogsAtEnd = await helper.blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
-//     expect(blogsAtEnd).toHaveLength(
-//       helper.initialBlogs.length - 1
-//     )
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length - 1
+    )
 
-//     const titles = blogsAtEnd.map(blog => blog.title)
+    const titles = blogsAtEnd.map(blog => blog.title)
 
-//     expect(titles).not.toContain(blogToDelete.title)
-//   })
-// })
+    expect(titles).not.toContain(blogToDelete.title)
+  })
+})
 
 afterAll(async () => {
   await mongoose.connection.close()
