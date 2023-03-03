@@ -135,38 +135,75 @@ describe('addition of a new blog', () => {
   })
 })
 
-// describe('viewing a specific blog', () => {
-//   test('a specific blog can be viewed', async () => {
-//     const blogsAtStart = await helper.blogsInDb()
+describe('viewing a specific blog', () => {
+  test('a specific blog can be viewed', async () => {
+    const blogsAtStart = await helper.blogsInDb()
 
-//     const blogToView = blogsAtStart[0]
+    const blogToView = blogsAtStart[0]
 
-//     const resultBlog = await api
-//       .get(`/api/blogs/${blogToView.id}`)
-//       .expect(200)
-//       .expect('Content-Type', /application\/json/)
+    const resultBlog = await api
+      .get(`/api/blogs/${blogToView.id}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
 
-//     expect(resultBlog.body).toEqual(blogToView)
-//   })
+    expect(resultBlog.body).toEqual(blogToView)
+  })
 
-//   test('fails with status code 404 if blog does not exist', async () => {
-//     const validNonexistingId = await helper.nonExistingId()
+  test('fails with status code 404 if blog does not exist', async () => {
+    const validNonexistingId = await helper.nonExistingId()
 
-//     console.log(validNonexistingId)
+    await api
+      .get(`/api/blogs/${validNonexistingId}`)
+      .expect(404)
+  })
 
-//     await api
-//       .get(`/api/blogs/${validNonexistingId}`)
-//       .expect(404)
-//   })
+  test('fails with status code 400 id is invalid', async () => {
+    const invalidId = '5a3d5da59070081a82a3445'
 
-//   test('fails with status code 400 id is invalid', async () => {
-//     const invalidId = '5a3d5da59070081a82a3445'
+    await api
+      .get(`/api/blogs/${invalidId}`)
+      .expect(400)
+  })
+})
 
-//     await api
-//       .get(`/api/blogs/${invalidId}`)
-//       .expect(400)
-//   })
-// })
+describe('updating a blog', () => {
+  test('a blog can be updated', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+
+    const updatedBlog = {
+      ...blogToUpdate,
+      likes: 100,
+    }
+  
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const updatedBlogInDb = blogsAtEnd.find(blog => blog.id === blogToUpdate.id)
+
+    expect(updatedBlogInDb.likes).toBe(100)
+  })
+
+  test('fails with status code 404 if blog does not exist', async () => {
+    const validNonexistingId = await helper.nonExistingId()
+
+    const updatedBlog = {
+      title: 'async/await simplifies making async calls',
+      author: 'Michael Chan',
+      url: 'https://reactpatterns.com/',
+      likes: 7,
+    }
+    
+    await api
+      .put(`/api/blogs/${validNonexistingId}`)
+      .send(updatedBlog)
+      .expect(404)
+  })
+})
 
 describe('deletion of a blog', () => {
   test('a blog can be deleted', async () => {

@@ -39,27 +39,23 @@ blogsRouter.delete('/:id', async (request, response) => {
 module.exports = blogsRouter
 
 // Show a single blog
-// blogsRouter.get('/:id', async (request, response, next) => {
-//   const blog = await Blog.findById(request.params.id)
-//   if (blog) {
-//     response.json(blog)
-//   } else {
-//     response.status(404).end()
-//   } 
-// })
+blogsRouter.get('/:id', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  if (blog) {
+    response.json(blog) // status code 200 by default
+  } else {
+    response.status(404).end()
+  } 
+})
 
 // Update a blog
-// blogsRouter.put('/:id', (request, response, next) => {
-//   const body = request.body
-//
-//   const blog = {
-//     title: body.title,
-//     ...
-//   }
-//
-//   Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
-//     .then(updatedBlog => {
-//       response.json(updatedBlog)
-//     })
-//     .catch(error => next(error))
-// })
+blogsRouter.put('/:id', async (request, response) => {
+  const blog = { ...request.body }
+
+  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true, runValidators: true, context: 'query' })
+  if (updatedBlog) {
+    response.json(updatedBlog)
+  } else {
+    response.status(404).end()
+  }
+})
