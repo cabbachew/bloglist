@@ -16,9 +16,19 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   await Blog.deleteMany({})
+  await User.deleteMany({})
   console.log('cleared')
 
-  await Blog.insertMany(helper.initialBlogs)
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const author = new User({ username: 'root', passwordHash })
+  await author.save()
+
+  const nonAuthor = new User({ username: 'testuser', passwordHash })
+  await nonAuthor.save()
+
+  const blogs = helper.initialBlogs
+    .map(blog => ({ ...blog, user: author._id }))
+  await Blog.insertMany(blogs)
 
   // const blogObjects = helper.initialBlogs
   //   .map(blog => new Blog(blog))
@@ -70,8 +80,11 @@ describe('addition of a new blog', () => {
       likes: 7,
     }
 
+    const token = await helper.getToken('root')
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -92,8 +105,11 @@ describe('addition of a new blog', () => {
       url: 'https://reactpatterns.com/',
     }
 
+    const token = await helper.getToken('root')
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -110,8 +126,11 @@ describe('addition of a new blog', () => {
       likes: 7,
     }
 
+    const token = await helper.getToken('root')
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(400)
 
@@ -127,8 +146,11 @@ describe('addition of a new blog', () => {
       likes: 7,
     }
 
+    const token = await helper.getToken('root')
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(400)
     
@@ -136,12 +158,30 @@ describe('addition of a new blog', () => {
 
     expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
   })
+
+  test('blog without token is not added', async () => {
+    const newBlog = {
+      title: 'async/await simplifies making async calls',
+      author: 'Michael Chan',
+      url: 'https://reactpatterns.com/',
+      likes: 7,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
 })
 
 describe('viewing a specific blog', () => {
-  test('a specific blog can be viewed', async () => {
+  test('a blog can be retrieved by its id', async () => {
     const blogsAtStart = await helper.blogsInDb()
-
+    
     const blogToView = blogsAtStart[0]
 
     const resultBlog = await api
@@ -149,7 +189,8 @@ describe('viewing a specific blog', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/)
 
-    expect(resultBlog.body).toEqual(blogToView)
+    expect(resultBlog.body.id).toBe(blogToView.id)
+    expect(resultBlog.body.title).toBe(blogToView.title)
   })
 
   test('fails with status code 404 if blog does not exist', async () => {
@@ -176,9 +217,9 @@ describe('updating a blog', () => {
 
     const updatedBlog = {
       ...blogToUpdate,
-      likes: 100,
+      likes: 100
     }
-  
+
     await api
       .put(`/api/blogs/${blogToUpdate.id}`)
       .send(updatedBlog)
@@ -209,37 +250,45 @@ describe('updating a blog', () => {
 })
 
 describe('deletion of a blog', () => {
-  test('a blog can be deleted', async () => {
+  test('a blog can be deleted by post owner', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
 
+    const token = await helper.getToken('root')
+
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
-
-    expect(blogsAtEnd).toHaveLength(
-      helper.initialBlogs.length - 1
-    )
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length - 1)
 
     const titles = blogsAtEnd.map(blog => blog.title)
-
     expect(titles).not.toContain(blogToDelete.title)
+  })
+
+  test('a blog cannot be deleted by other user', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    const token = await helper.getToken('testuser')
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+    const titles = blogsAtEnd.map(blog => blog.title)
+    expect(titles).toContain(blogToDelete.title)
   })
 })
 
-describe('when there is initially one user at db', () => {
-  beforeEach(async () => {
-    await User.deleteMany({})
-
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'root', passwordHash })
-
-    await user.save()
-  })
-
-  test('creation succeeds with a fresh username', async () => {
+describe('creation of a user', () => {  
+  test('succeeds with a fresh username', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -261,7 +310,7 @@ describe('when there is initially one user at db', () => {
     expect(usernames).toContain(newUser.username)
   })
 
-  test('creation fails with proper status code and message if username already taken', async () => {
+  test('fails if username already taken', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -282,7 +331,7 @@ describe('when there is initially one user at db', () => {
     expect(usersAtEnd).toEqual(usersAtStart)
   })
 
-  test('creation fails with proper status code and message without username', async () => {
+  test('fails without username', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -302,7 +351,7 @@ describe('when there is initially one user at db', () => {
     expect(usersAtEnd).toEqual(usersAtStart)
   })
 
-  test('creation fails with proper status code and message if username is too short', async () => {
+  test('fails if username is too short', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -323,7 +372,7 @@ describe('when there is initially one user at db', () => {
     expect(usersAtEnd).toEqual(usersAtStart)
   })
 
-  test('creation fails with proper status code and message without password', async () => {
+  test('fails without password', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
@@ -343,7 +392,7 @@ describe('when there is initially one user at db', () => {
     expect(usersAtEnd).toEqual(usersAtStart)
   })
 
-  test('creation fails with proper status code and message if password is too short', async () => {
+  test('fails if password is too short', async () => {
     const usersAtStart = await helper.usersInDb()
 
     const newUser = {
