@@ -1,0 +1,8 @@
+# Ignore node modules
+node_modules
+
+# Ignore VS Code REST Client requests
+requests
+
+# Ignore environment variables
+.env
